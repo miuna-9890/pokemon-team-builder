@@ -1,12 +1,15 @@
 import { useState } from 'react'
 import SearchBar from './components/SearchBar'
 import PokemonCard from "./components/PokemonCard.jsx";
+import TeamAnalysisPopUp from "./components/TeamAnalysisPopUp.jsx";
 import './App.css'
+import './styles/TeamAnalysisPopUp.css'
 import toast, {Toaster} from "react-hot-toast";
 
 function App() {
     const [pokemonData, setPokemonData] = useState(null)
     const [team, setTeam] = useState([]) // State to hold the user's Pokémon team(up to 6)
+    const [showAnalysis, setShowAnalysis] = useState(false) // State to control the visibility of the team analysis pop-up
 
     // Function to handle searching for a Pokémon by name
     const handleSearch = async (pokemon) => {
@@ -76,6 +79,17 @@ function App() {
                         isInTeam={true}
                     />
                 ))}
+
+                {team.length > 0 && (
+                    <button onClick={() => setShowAnalysis(true)}>Analyze your team</button>
+                )}
+
+                {showAnalysis && (
+                    <TeamAnalysisPopUp
+                        team={team}
+                        onClose={() => setShowAnalysis(false)}
+                    />
+                )}
             </div>
 
         </div>
