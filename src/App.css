@@ -1,0 +1,24 @@
+#root {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 2rem;
+  text-align: center;
+}
+
+/* Container holds both panels side by side */
+.app-container {
+  display:flex;
+  gap: 20px;
+  padding: 20px;
+}
+
+.main-panel {
+  flex: 2;
+}
+
+.team-panel {
+  flex: 1;
+  border-left: 1px solid gray;
+  padding-left: 20px;
+}
+
