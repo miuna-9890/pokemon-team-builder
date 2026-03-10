@@ -45,6 +45,7 @@ const TeamAnalysisPopUp = ({team, onClose }) => {
         fetchData();
     }, [team]);
 
+    // Function to analyze the stats of the team and categorize them based on their roles and speed
     useEffect(() => {
         // get the stats for each pokemon and their value for comparison
         const fetchStats = async () => {
@@ -56,16 +57,16 @@ const TeamAnalysisPopUp = ({team, onClose }) => {
 
                 // check AttackerType
                 let attackerType = "";
-                if (statsData.attack > statsData.specialAttack) {
+                if (statsData.attack > statsData['special-attack']) {
                     attackerType = "physical";
-                } else if (statsData.specialAttack > statsData.attack) {
+                } else if (statsData['special-attack'] > statsData.attack) {
                     attackerType = "special";
                 } else {
                     attackerType = "balanced";
                 }
 
                 // check defensiveness
-                let totalDefense = statsData.defense + statsData.specialDefense + statsData.hp;
+                let totalDefense = statsData.defense + statsData['special-defense'] + statsData.hp;
                 let role = "";
                 if (totalDefense > 100) {
                     role = "defensive"
@@ -114,6 +115,56 @@ const TeamAnalysisPopUp = ({team, onClose }) => {
         }
         fetchStats();
     }, [team]);
+
+    // Identify the weakest Pokémon in the team based on their total base stats
+    const weakestPokemon = team.map(p => ({
+        name: p.name,
+        totalStats: p.stats.reduce((acc, s) => acc + s.base_stat, 0),
+    })).sort((a, b) => a.totalStats - b.totalStats)[0];
+
+    // Function to generate recommendations based on the type and stats analysis of the team
+    const generateRecommendations = () => {
+        const recommendations = [];
+        const combinedWeaknesses = {};
+        Object.entries(typeData.veryWeak).forEach(([type, count]) => {
+            combinedWeaknesses[type] = (combinedWeaknesses[type] || 0) + count;
+        });
+
+        Object.entries(typeData.weak).forEach(([type, count]) => {
+            combinedWeaknesses[type] = (combinedWeaknesses[type] || 0) + count;
+        });
+
+        Object.entries(combinedWeaknesses).sort((a, b) => b[1] - a[1]).
+            forEach(([type, count]) => {
+            if (count >= 3) {
+                recommendations.push('Your team has a major weakness to ' + type + ': Consider adding Pokémon that resist ' + type);
+            } else if (count > 1) {
+                recommendations.push('Several Pokémon weak to ' + type + ': Consider removing some or adding Pokémon that resist ' + type);
+            }
+        });
+
+        if (statsData.physical.count === 0) {
+            recommendations.push('No physical attackers');
+        }
+        if (statsData.special.count === 0) {
+            recommendations.push('No special attackers');
+        }
+        if (statsData.defensive.count === 0) {
+            recommendations.push('No defensive Pokémon');
+        }
+        if (statsData.offensive.count === 0) {
+            recommendations.push('No offensive Pokémon');
+        }
+        if (statsData.fast.count === 0) {
+            recommendations.push('No fast Pokémon');
+        }
+
+        if (weakestPokemon && team.length > 1) {
+            recommendations.push(`Your weakest Pokémon is ${weakestPokemon.name} with the lowest base stats of ${weakestPokemon.totalStats}. Consider replacing to improve overall strength.`);
+        }
+        return recommendations;
+    }
+    const recommendations = typeData && statsData ? generateRecommendations() : [];
 
     if (!typeData || !statsData) return <div className="team-analysis-popup-overlay">Loading analysis...</div>;
 
@@ -181,6 +232,19 @@ const TeamAnalysisPopUp = ({team, onClose }) => {
                             ))}
                         </ul>
 
+                    </div>
+
+                    <div className="analysis-section">
+                        <h2>Recommendations</h2>
+                        {recommendations.length > 0 ? (
+                            <ul>
+                                {recommendations.map((rec, index) => (
+                                    <li key={index}>{rec}</li>
+                                ))}
+                            </ul>
+                        ) : (
+                            <p>Your team has good type and role coverage!</p>
+                            )}
                     </div>
                 </div>
             </div>
