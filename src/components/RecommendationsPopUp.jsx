@@ -5,13 +5,15 @@ const RecommendationsPopUp = ({ recommendations, onClose }) => {
             <div className="team-analysis-popup">
                 <div className="popUp-header">
                     <h1>Recommendations</h1>
-                    <button onClick={onClose}>Close</button>
+                    <button className="popUp-header-close" onClick={onClose}>&times;</button>
                 </div>
                 <div className="rec-section">
                     {recommendations &&
                     <>
+                        <div className="recommendation-overview">
                     {recommendations.typeWeaknesses.length > 0 && (
                             <div className="recommendation-typesWeaknesses">
+                                <h3>Duplicate Weaknesses</h3>
                                 <ul>
                                     {recommendations.typeWeaknesses.map(t => (<li key={t.text}>
                                             {t.text} <span className="rec-type"> {t.type}</span>
@@ -24,6 +26,7 @@ const RecommendationsPopUp = ({ recommendations, onClose }) => {
 
                         {recommendations.roleGaps.length > 0 && (
                             <div className="recommendation-roleGaps">
+                                <h3>Role Gaps</h3>
                                 <ul>
                                     {recommendations.roleGaps.map(r => (<li key={r}>{r}</li>
                                     ))}
@@ -31,9 +34,9 @@ const RecommendationsPopUp = ({ recommendations, onClose }) => {
                                 <p>Consider adding Pokémon that can fill these roles.</p>
                             </div>
                         )}
-
                         {recommendations.speedGaps.length > 0 && (
                             <div className="recommendation-speedGaps">
+                                <h3>Speed Gaps</h3>
                                 <ul>
                                     {recommendations.speedGaps.map(s => (<li key={s}>{s}</li>
                                     ))}
@@ -44,12 +47,17 @@ const RecommendationsPopUp = ({ recommendations, onClose }) => {
 
                     {recommendations.weakestPokemon !== null && (
                         <div className="recommendation-weakestPokemon">
-                            <ul>
                                 <h3>Weakest Pokémon</h3>
-                                <p>{recommendations.weakestPokemon}</p>
-                            </ul>
+                                {recommendations.weakestPokemon.map(w => (
+                                    <div key={w.text}>
+                                        <p>{w.text}</p>
+                                        <p>Consider replacing it with a stronger pokemon.</p>
+                                        <img className="recommendation-weakestPokemon-img" src={w.pic} alt="weakest pokemon" />
+                                    </div>
+                                ))}
                         </div>
                     )}
+                        </div>
                     </>
                     }
                 </div>

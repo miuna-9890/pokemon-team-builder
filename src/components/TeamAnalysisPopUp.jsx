@@ -123,6 +123,7 @@ const TeamAnalysisPopUp = ({team, onClose }) => {
     const weakestPokemon = team.map(p => ({
         name: p.name,
         totalStats: p.stats.reduce((acc, s) => acc + s.base_stat, 0),
+        pic: p.sprites.front_default
     })).sort((a, b) => a.totalStats - b.totalStats)[0];
 
     // Function to generate recommendations based on the type and stats analysis of the team
@@ -131,7 +132,7 @@ const TeamAnalysisPopUp = ({team, onClose }) => {
             typeWeaknesses: [],
             roleGaps: [],
             speedGaps: [],
-            weakestPokemon: null
+            weakestPokemon: [],
         }
 
         // Type weaknesses
@@ -149,35 +150,36 @@ const TeamAnalysisPopUp = ({team, onClose }) => {
             if (count >= 3) {
                 recommendations.typeWeaknesses.push({
                     type,
-                    text: `Your team has ${count} Pokémon weak to ${type}.`
+                    text: `Your team has ${count} Pokémon weak to`
                 });
             } else if (count > 1) {
                 recommendations.typeWeaknesses.push({
                     type,
-                    text: `Your team has ${count} Pokémon weak to ${type}.`
+                    text: `Your team has ${count} Pokémon weak to`
                 });
             }
         });
 
         if (statsData.physical.count === 0) {
-            recommendations.roleGaps.push('No physical attackers');
+            recommendations.roleGaps.push('No PHYSICAL attackers');
         }
         if (statsData.special.count === 0) {
-            recommendations.roleGaps.push('No special attackers');
+            recommendations.roleGaps.push('No SPECIAL attackers');
         }
         if (statsData.defensive.count === 0) {
-            recommendations.roleGaps.push('No defensive Pokémon');
+            recommendations.roleGaps.push('No DEFENSIVE Pokémon');
         }
         if (statsData.offensive.count === 0) {
-            recommendations.roleGaps.push('No offensive Pokémon');
+            recommendations.roleGaps.push('No OFFENSIVE Pokémon');
         }
         if (statsData.fast.count === 0) {
-            recommendations.speedGaps.push('No fast Pokémon');
+            recommendations.speedGaps.push('No FAST Pokémon');
         }
 
         if (weakestPokemon && team.length > 1) {
-            recommendations.weakestPokemon = `Your weakest Pokémon is ${weakestPokemon.name} with total base stats of ${weakestPokemon.totalStats}. Consider replacing it with a stronger option.`;
-        }
+            recommendations.weakestPokemon.push({
+            pic: weakestPokemon.pic, text: `Your WEAKEST Pokémon is ${weakestPokemon.name.toUpperCase()} with total base stats of ${weakestPokemon.totalStats}.`
+            })}
         return recommendations;
     }
     const recommendations = typeData && statsData ? generateRecommendations() : null;
@@ -189,7 +191,7 @@ const TeamAnalysisPopUp = ({team, onClose }) => {
             <div className="team-analysis-popup">
                 <div className="popUp-header">
                     <h1>Team Analysis</h1>
-                    <button onClick={onClose}>Close</button>
+                    <button className="popUp-header-close" onClick={onClose}>&times;</button>
                     <button onClick={() => setShowRecommendations(true)}>Show Recommendations</button>
                 </div>
 
