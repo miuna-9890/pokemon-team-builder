@@ -20,7 +20,6 @@ Pokémon and analyze the team's type coverage, role distribution, and strengths/
 ### Manual testing steps:
 - Happy path testing:
   - Search for Pokémon by name and verify correct data is displayed (name, types, stats, abilities).
-    ![Search Screenshot](src/assets/search.png)
   - Add & Remove Pokémon to the team.
     ![Team Builder Screenshot](src/assets/teamBuilder.png)
   - Open team analysis popup to check type coverage and role coverage.
