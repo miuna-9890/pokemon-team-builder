@@ -3,7 +3,9 @@ import SearchBar from './components/SearchBar'
 import PokemonCard from "./components/PokemonCard.jsx";
 import TeamAnalysisPopUp from "./components/TeamAnalysisPopUp.jsx";
 import './App.css'
+import './styles/PokemonCard.css'
 import './styles/TeamAnalysisPopUp.css'
+import './styles/SearchBar.css'
 import toast, {Toaster} from "react-hot-toast";
 
 function App() {
@@ -71,6 +73,8 @@ function App() {
 
             <div className="team-panel">
                 <h2>Your Team ({team.length}/6)</h2>
+
+                <div className="team-panel-cards">
                 {team.map(pokemon => (
                     <PokemonCard
                         key={pokemon.name}
@@ -79,6 +83,7 @@ function App() {
                         isInTeam={true}
                     />
                 ))}
+                </div>
 
                 {team.length > 0 && (
                     <button onClick={() => setShowAnalysis(true)}>Analyze your team</button>

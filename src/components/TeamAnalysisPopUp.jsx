@@ -1,10 +1,13 @@
 // reusable component to display team analysis data in a pop-up modal
 
 import React, {useEffect, useState} from 'react';
+import RecommendationsPopUp from "./RecommendationsPopUp.jsx";
+import '../styles/RecommendationsPopUp.css'
 
 const TeamAnalysisPopUp = ({team, onClose }) => {
     const [typeData, setTypeData] = useState(null)
     const [statsData, setStatsData] = useState(null)
+    const [showRecommendations, setShowRecommendations] = useState(false)
 
     // Function to fetch team analysis data from the backend API
     useEffect(() => {
@@ -124,7 +127,14 @@ const TeamAnalysisPopUp = ({team, onClose }) => {
 
     // Function to generate recommendations based on the type and stats analysis of the team
     const generateRecommendations = () => {
-        const recommendations = [];
+        const recommendations = {
+            typeWeaknesses: [],
+            roleGaps: [],
+            speedGaps: [],
+            weakestPokemon: null
+        }
+
+        // Type weaknesses
         const combinedWeaknesses = {};
         Object.entries(typeData.veryWeak).forEach(([type, count]) => {
             combinedWeaknesses[type] = (combinedWeaknesses[type] || 0) + count;
@@ -137,34 +147,40 @@ const TeamAnalysisPopUp = ({team, onClose }) => {
         Object.entries(combinedWeaknesses).sort((a, b) => b[1] - a[1]).
             forEach(([type, count]) => {
             if (count >= 3) {
-                recommendations.push('Your team has a major weakness to ' + type + ': Consider adding Pokémon that resist ' + type);
+                recommendations.typeWeaknesses.push({
+                    type,
+                    text: `Your team has ${count} Pokémon weak to ${type}.`
+                });
             } else if (count > 1) {
-                recommendations.push('Several Pokémon weak to ' + type + ': Consider removing some or adding Pokémon that resist ' + type);
+                recommendations.typeWeaknesses.push({
+                    type,
+                    text: `Your team has ${count} Pokémon weak to ${type}.`
+                });
             }
         });
 
         if (statsData.physical.count === 0) {
-            recommendations.push('No physical attackers');
+            recommendations.roleGaps.push('No physical attackers');
         }
         if (statsData.special.count === 0) {
-            recommendations.push('No special attackers');
+            recommendations.roleGaps.push('No special attackers');
         }
         if (statsData.defensive.count === 0) {
-            recommendations.push('No defensive Pokémon');
+            recommendations.roleGaps.push('No defensive Pokémon');
         }
         if (statsData.offensive.count === 0) {
-            recommendations.push('No offensive Pokémon');
+            recommendations.roleGaps.push('No offensive Pokémon');
         }
         if (statsData.fast.count === 0) {
-            recommendations.push('No fast Pokémon');
+            recommendations.speedGaps.push('No fast Pokémon');
         }
 
         if (weakestPokemon && team.length > 1) {
-            recommendations.push(`Your weakest Pokémon is ${weakestPokemon.name} with the lowest base stats of ${weakestPokemon.totalStats}. Consider replacing to improve overall strength.`);
+            recommendations.weakestPokemon = `Your weakest Pokémon is ${weakestPokemon.name} with total base stats of ${weakestPokemon.totalStats}. Consider replacing it with a stronger option.`;
         }
         return recommendations;
     }
-    const recommendations = typeData && statsData ? generateRecommendations() : [];
+    const recommendations = typeData && statsData ? generateRecommendations() : null;
 
     if (!typeData || !statsData) return <div className="team-analysis-popup-overlay">Loading analysis...</div>;
 
@@ -174,78 +190,139 @@ const TeamAnalysisPopUp = ({team, onClose }) => {
                 <div className="popUp-header">
                     <h1>Team Analysis</h1>
                     <button onClick={onClose}>Close</button>
+                    <button onClick={() => setShowRecommendations(true)}>Show Recommendations</button>
                 </div>
 
                 <div className="team-analysis-content">
                     <div className="analysis-section">
                         <h2>Type coverage</h2>
                         <h3>Very Weak Against</h3>
-                        <ul>
+                        <div className="type-grid">
                             {Object.entries(typeData.veryWeak).map(([type, count]) => (
-                                <li key={type}>{type} (x{count})</li>
+                                <span key={type} className={`type ${type}`}>
+                                    {type} (x{count})
+                                </span>
                             ))}
-                        </ul>
+                        </div>
                         <h3>Weak Against</h3>
-                        <ul>
+                        <div className="type-grid">
                             {Object.entries(typeData.weak).map(([type, count]) => (
-                                <li key={type}>{type} (x{count})</li>
+                                <span key={type} className={`type ${type}`}>
+                                    {type} (x{count})
+                                </span>
                             ))}
-                        </ul>
+                        </div>
                         <h3>Very Strong Against</h3>
-                        <ul>
+                        <div>
                             {Object.entries(typeData.veryStrong).map(([type, count]) => (
-                                <li key={type}>{type} (x{count})</li>
-                            ))}
-                        </ul>
+                                <span key={type} className={`type ${type}`}>
+                                    {type} (x{count})
+                                </span>                            ))}
+                        </div>
                         <h3>Strong Against</h3>
-                        <ul>
+                        <div>
                             {Object.entries(typeData.strong).map(([type, count]) => (
-                                <li key={type}>{type} (x{count})</li>
-                            ))}
-                        </ul>
+                                <span key={type} className={`type ${type}`}>
+                                    {type} (x{count})
+                                </span>                            ))}
+                        </div>
                         <h3>Resistant Against</h3>
-                        <ul>
+                        <div>
                             {Object.entries(typeData.resistant).map(([type, count]) => (
-                                <li key={type}>{type} (x{count})</li>
+                                <span key={type} className={`type type-${type}`}>
+                                    {type} (x{count})
+                                </span>
                             ))}
-                        </ul>
+                        </div>
                     </div>
 
                     <div className="analysis-section">
                         <h2>Role coverage</h2>
                         <h3>Attacker Type Distribution</h3>
-                        <ul>
-                            {Object.entries(statsData).filter(([key]) => ['physical', 'special', 'balanced'].includes(key)).map(([type, data]) => (
-                                <li key={type}>{type} ({data.count}): {data.pokemons.join(', ')}</li>
+                        <div className="type-grid">
+                            {Object.entries(statsData).filter(([key, data]) => ['physical', 'special', 'balanced'].includes(key) && data.count>0).map(([type, data]) => (
+                                <div key={type} className="role-card">
+                                    {type} ({data.count})
+                                        <div className="role-pokemons">
+                                            {data.pokemons.map(p => {
+                                                const pokemon = team.find(pokemon => pokemon.name === p);
+                                                return (
+                                                    <div className="pokemon-wrapper">
+                                                        <img key={p}
+                                                        src={pokemon.sprites.front_default}
+                                                        alt={p}
+                                                        title={p}
+                                                        className="role-pokemon-image"
+                                                        />
+                                                        <div className="role-pokemon-name">{p}</div>
+                                                    </div>
+
+                                                );
+                                        })}
+                                </div>
+                                </div>
                             ))}
-                        </ul>
+                        </div>
+
                         <h3>Role Distribution</h3>
-                        <ul>
-                            {Object.entries(statsData).filter(([key]) => ['defensive', 'offensive'].includes(key)).map(([type, data]) => (
-                                <li key={type}>{type} ({data.count}): {data.pokemons.join(', ')}</li>
+                        <div className="type-grid">
+                            {Object.entries(statsData).filter(([key, data]) => ['defensive', 'offensive'].includes(key) && data.count>0).map(([type, data]) => (
+                                <div key={type} className="role-card">
+                                    {type} ({data.count})
+                                    <div className="role-pokemons">
+                                        {data.pokemons.map(p => {
+                                            const pokemon = team.find(pokemon => pokemon.name === p);
+                                            return (
+                                                <div className="pokemon-wrapper">
+                                                    <img key={p}
+                                                         src={pokemon.sprites.front_default}
+                                                         alt={p}
+                                                         title={p}
+                                                         className="role-pokemon-image"
+                                                    />
+                                                    <div className="role-pokemon-name">{p}</div>
+                                                </div>
+
+                                            );
+                                        })}
+                                    </div>
+                                </div>
                             ))}
-                        </ul>
+                        </div>
                         <h3>Speed Distribution</h3>
-                        <ul>
-                            {Object.entries(statsData).filter(([key]) => ['fast', 'average', 'slow'].includes(key)).map(([type, data]) => (
-                                <li key={type}>{type} ({data.count}): {data.pokemons.join(', ')}</li>
+                        <div className="type-grid">
+                            {Object.entries(statsData).filter(([key, data]) => ['fast', 'average', 'slow'].includes(key) && data.count>0).map(([type, data]) => (
+                                <div key={type} className="role-card">
+                                    {type} ({data.count})
+                                    <div className="role-pokemons">
+                                        {data.pokemons.map(p => {
+                                            const pokemon = team.find(pokemon => pokemon.name === p);
+                                            return (
+                                                <div className="pokemon-wrapper">
+                                                    <img key={p}
+                                                         src={pokemon.sprites.front_default}
+                                                         alt={p}
+                                                         title={p}
+                                                         className="role-pokemon-image"
+                                                    />
+                                                    <div className="role-pokemon-name">{p}</div>
+                                                </div>
+
+                                            );
+                                        })}
+                                    </div>
+                                </div>
                             ))}
-                        </ul>
+                        </div>
 
                     </div>
 
-                    <div className="analysis-section">
-                        <h2>Recommendations</h2>
-                        {recommendations.length > 0 ? (
-                            <ul>
-                                {recommendations.map((rec, index) => (
-                                    <li key={index}>{rec}</li>
-                                ))}
-                            </ul>
-                        ) : (
-                            <p>Your team has good type and role coverage!</p>
-                            )}
-                    </div>
+                    {showRecommendations && (
+                        <RecommendationsPopUp
+                            recommendations={recommendations}
+                            onClose={() => setShowRecommendations(false)}
+                        />
+                    )}
                 </div>
             </div>
         </div>

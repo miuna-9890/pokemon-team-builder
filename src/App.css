@@ -3,6 +3,7 @@
   margin: 0 auto;
   padding: 2rem;
   text-align: center;
+  justify-content: center;
 }
 
 /* Container holds both panels side by side */
@@ -13,11 +14,30 @@
 }
 
 .main-panel {
-  flex: 2;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  padding: 20px;
+}
+
+.main-panel input {
+  width: 70%;
+  padding: 10px;
+  font-size: 16px;
+  margin-bottom: 20px;
 }
 
 .team-panel {
-  flex: 1;
+  flex: 2;
   border-left: 1px solid gray;
   padding-left: 20px;
+}
+
+.team-panel-cards {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 20px;
+  justify-items: center;
 }
